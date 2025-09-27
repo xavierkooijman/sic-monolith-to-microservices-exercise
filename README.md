@@ -1,2 +1,3 @@
 # Monolith to microservices exercise
 
+In this exercise, you will analyze a monolithic application and migrate it into a microservices architecture. Begin by identifying the different business contexts within the monolith and splitting the logic and data into separate, independent services, with each service managing its own data. Assign each service its own address and introduce an API Gateway to provide a single unified entry point for clients, ensuring that requests are redirected to the correct service. Keep in mind that some services may depend on data from others, so you will also need to consider how inter-service communication is handled.
