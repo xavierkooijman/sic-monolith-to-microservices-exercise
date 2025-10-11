@@ -19,31 +19,44 @@ let reviews = [
   { id: 3, movieId: 2, userId: 1, text: "Classic sci-fi." }
 ];
 
-
-
 app.get("/movies", (req, res) => res.json(movies));
-
 
 app.get("/movies/:id", (req, res) => {
   const movie = movies.find(m => m.id === parseInt(req.params.id));
-  if (!movie) return res.status(404).json({ error: "Movie not found" });
+  if (!movie) {
+    return res.status(404).json({ error: "Movie not found" });
+  }
 
   // when returning a single movie we want to send back all the info about the movie
   // including the reviews of it
   const movieReviews = reviews.filter(r => r.movieId === movie.id);
-  res.json({ ...movie, reviews: movieReviews });
+  res.json({
+    id: movie.id,
+    title: movie.title,
+    year: movie.year,
+    reviews: movieReviews
+  });
+
 });
 
 app.get("/reviews/:id", (req, res) => {
   const review = reviews.find(r => r.id === parseInt(req.params.id));
-  review ? res.json(review) : res.status(404).json({ error: "Review not found" });
+  if (review) {
+    res.json(review);
+  } else {
+    res.status(404).json({ error: "Review not found" });
+  }
 });
 
 app.get("/users", (req, res) => res.json(users));
 
 app.get("/users/:id", (req, res) => {
   const user = users.find(u => u.id === parseInt(req.params.id));
-  user ? res.json(user) : res.status(404).json({ error: "User not found" });
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).json({ error: "User not found" });
+  }
 });
 
 app.get("/reviews", (req, res) => res.json(reviews));
