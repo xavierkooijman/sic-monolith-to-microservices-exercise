@@ -16,4 +16,38 @@ const getReviewsByMovieId = async (movieId) => {
   return reviews.filter((r) => r.movieId === parseInt(movieId));
 };
 
-module.exports = { getReviews, getReviewById, getReviewsByMovieId };
+const createReview = async (reviewData) => {
+  const newReview = {
+    id: reviews.length + 1,
+    movieId: reviewData.movieId,
+    userId: reviewData.userId,
+    text: reviewData.text,
+  };
+  reviews.push(newReview);
+  return newReview;
+};
+
+const deleteReview = async (id) => {
+  const index = reviews.findIndex((r) => r.id === parseInt(id));
+  if (index !== -1) {
+    reviews.splice(index, 1);
+    return true;
+  }
+  return false;
+};
+
+const updateReview = async (id, reviewData) => {
+  const index = reviews.findIndex((r) => r.id === parseInt(id));
+  if (index !== -1) {
+    reviews[index] = {
+      ...reviews[index],
+      movieId: reviewData.movieId ?? reviews[index].movieId,
+      userId: reviewData.userId ?? reviews[index].userId,
+      text: reviewData.text ?? reviews[index].text,
+    };
+    return reviews[index];
+  }
+  return null;
+};
+
+module.exports = { getReviews, getReviewById, getReviewsByMovieId, createReview, deleteReview, updateReview};
