@@ -1,6 +1,6 @@
 const users = [
-  { id: 1, name: "Alice" },
-  { id: 2, name: "Bob" },
+  { id: 1, name: "Alice", email: "example@gmail.com" },
+  { id: 2, name: "Bob", email: "example2@gmail.com" },
 ];
 
 function getAllUsers() {
@@ -12,9 +12,13 @@ function getUserById(id) {
 }
 
 function addUser(user) {
+  if (users.find((u) => u.email === user.email)) {
+    return null; // Email already exists
+  }
   const newUser = {
     id: users.length + 1,
     name: user.name,
+    email: user.email,
   };
   users.push(newUser);
   return newUser;
