@@ -24,4 +24,32 @@ const getMovieById = async (id) => {
   return movie;
 };
 
-module.exports = { getMovies, getMovieById };
+const createMovie = async (movieData) => {
+  return await moviesModel.createMovie(movieData);
+};
+
+const updateMovie = async (id, movieData) => {
+  const movie = await moviesModel.getMovieById(id);
+  
+  if (!movie) {
+    const error = new Error("Movie not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return await moviesModel.updateMovie(id, movieData);
+};
+
+const deleteMovie = async (id) => {
+  const movie = await moviesModel.getMovieById(id);
+  
+  if (!movie) {
+    const error = new Error("Movie not found");
+    error.status = 404;
+    throw error;
+  }
+
+  return await moviesModel.deleteMovie(id);
+};
+
+module.exports = { getMovies, getMovieById, createMovie, updateMovie, deleteMovie };
