@@ -1,8 +1,11 @@
-const express = require('express')
-const app = express()
+const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output.json");
+
+const app = express();
 app.use(express.json());
 
-//routes
-app.use('/users', require('./routes/user.routes'));
-
-app.listen(3000, () => console.log("Movie App monolith running on port 3000"));
+// Routes
+app.use("/users", require("./routes/user.routes"));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
+module.exports = app;
