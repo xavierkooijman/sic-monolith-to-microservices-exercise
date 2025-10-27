@@ -91,17 +91,22 @@ $ref: '#/definitions/DeleteUser'} }
 
 
 function loginUser(req, res) {
-  const { email, password } = req.body;
-  const user = userModel.getUserByEmail(email);
-  if (!user || user.password !== password) {
-    return res.status(401).json({ error: "Invalid email or password" });
-  }
-  const token = jwt.sign(
-    { id: user.id, name: user.name, email: user.email, role: user.role },
-    "secret",
-    { expiresIn: "1h" }
-  );
-  res.status(200).json({ token });
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const user = userModel.getUserByEmail(email);
+    if (!user || user.password !== password) {
+        return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        "secret",
+        { expiresIn: "1h" }
+    );
+    res.status(200).json({ token });
 }
 
 module.exports = { getUsers, getUser, createUser, updateUser, deleteUser, loginUser };

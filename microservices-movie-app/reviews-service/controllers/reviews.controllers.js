@@ -86,9 +86,11 @@ const createReview = async (req, res, next) => {
   */
   try {
     logger.info("Creating new review");
-    
-    const newReview = await reviewsService.createReview(req.body);
-    
+
+    const userId = req.user.id;
+
+    const newReview = await reviewsService.createReview(req.body, userId);
+
     logger.info("Review created successfully");
     res.status(201).json(newReview);
   } catch (error) {
