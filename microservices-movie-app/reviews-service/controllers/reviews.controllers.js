@@ -1,4 +1,5 @@
 const reviewsService = require("../services/reviews.services");
+const logger = require("../logger");
 
 const getReviews = async (req, res, next) => {
   /*
@@ -11,13 +12,20 @@ const getReviews = async (req, res, next) => {
   */
   try {
     const { movieId } = req.query;
+    
+    logger.info("Fetching reviews");
+    
     if (movieId) {
       const reviews = await reviewsService.getReviewsByMovieId(movieId);
+      logger.info("Reviews fetched successfully");
       return res.status(200).json(reviews);
     }
+    
     const reviews = await reviewsService.getReviews();
+    logger.info("Reviews fetched successfully");
     res.status(200).json(reviews);
   } catch (error) {
+    logger.error({ error: error.message }, "Error fetching reviews");
     next(error);
   }
 };
@@ -43,16 +51,19 @@ const getReviewById = async (req, res, next) => {
   try {
     const { id } = req.params;
     
-    // 400 Bad Request - ID inválido (não é número)
+    logger.info(`Fetching review by ID ${id}`);
+    
+    // 400 Bad Request - ID inválido
     if (Number.isNaN(parseInt(id)) || parseInt(id) <= 0) {
+      logger.warn("Invalid review ID format");
       return res.status(400).json({ error: "Invalid id format. Must be a positive integer" });
     }
     
     const review = await reviewsService.getReviewById(id);
+    logger.info("Review fetched successfully");
     res.status(200).json(review);
   } catch (error) {
-    // 404 Not Found - lançado pelo service quando review não existe
-    // 500 Internal Server Error - tratado pelo middleware de erros
+    logger.error(`Error fetching review by ID ${id}`);
     next(error);
   }
 };
@@ -74,9 +85,14 @@ const createReview = async (req, res, next) => {
   #swagger.responses[400] = { description: 'Invalid data' }
   */
   try {
+    logger.info("Creating new review");
+    
     const newReview = await reviewsService.createReview(req.body);
+    
+    logger.info("Review created successfully");
     res.status(201).json(newReview);
   } catch (error) {
+    logger.error("Error creating review");
     next(error);
   }
 };
@@ -95,9 +111,16 @@ const deleteReview = async (req, res, next) => {
   #swagger.responses[404] = { description: 'Review not found' }
   */
   try {
-    await reviewsService.deleteReview(req.params.id);
+    const { id } = req.params;
+    
+    logger.info("Deleting review");
+    
+    await reviewsService.deleteReview(id);
+    
+    logger.info("Review deleted successfully");
     res.status(204).send();
   } catch (error) {
+    logger.error("Error deleting review");
     next(error);
   }
 };
@@ -126,9 +149,16 @@ const updateReview = async (req, res, next) => {
   #swagger.responses[400] = { description: 'Invalid data' }
   */
   try {
-    const updatedReview = await reviewsService.updateReview(req.params.id, req.body);
+    const { id } = req.params;
+    
+    logger.info("Updating review");
+    
+    const updatedReview = await reviewsService.updateReview(id, req.body);
+    
+    logger.info("Review updated successfully");
     res.status(200).json(updatedReview);
   } catch (error) {
+    logger.error("Error updating review");
     next(error);
   }
 };
