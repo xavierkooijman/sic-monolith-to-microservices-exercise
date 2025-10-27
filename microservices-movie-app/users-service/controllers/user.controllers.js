@@ -1,4 +1,5 @@
 const userModel = require("../models/user.models");
+const jwt = require("jsonwebtoken");
 
 // Controlador para obter todos os utilizadores
 function getUsers(req, res) {
@@ -88,4 +89,19 @@ $ref: '#/definitions/DeleteUser'} }
   }
 }
 
-module.exports = { getUsers, getUser, createUser, updateUser, deleteUser };
+
+function loginUser(req, res) {
+  const { email, password } = req.body;
+  const user = userModel.getUserByEmail(email);
+  if (!user || user.password !== password) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
+  const token = jwt.sign(
+    { id: user.id, name: user.name, email: user.email, role: user.role },
+    "secret",
+    { expiresIn: "1h" }
+  );
+  res.status(200).json({ token });
+}
+
+module.exports = { getUsers, getUser, createUser, updateUser, deleteUser, loginUser };
