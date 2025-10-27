@@ -1,4 +1,5 @@
 const moviesService = require("../services/movies.services");
+const logger = require("../logger");
 
 /*
  #swagger.tags = ['Movies']
@@ -9,7 +10,18 @@ const moviesService = require("../services/movies.services");
    schema: { 
      success: true,
      message: 'Movies retrieved successfully',
-     data: [{ $ref: '#/definitions/Movie' }]
+     data: [
+       {
+         id: 1,
+         title: 'Treasure Planet',
+         year: 2002
+       },
+       {
+         id: 2,
+         title: 'The Matrix',
+         year: 1999
+       }
+     ]
    } 
  }
  #swagger.responses[500] = { 
@@ -22,14 +34,20 @@ const moviesService = require("../services/movies.services");
  }
  */
 const getMovies = async (req, res, next) => {
+  logger.info('Incoming request: GET /movies');
+  
   try {
     const movies = await moviesService.getMovies();
+    logger.info('Movies retrieved successfully');
+    
     res.json({
       success: true,
       message: "Movies retrieved successfully",
       data: movies
     });
   } catch (error) {
+    logger.error('Error retrieving movies');
+    
     res.status(500).json({
       success: false,
       message: "Error retrieving movies",
@@ -74,8 +92,13 @@ const getMovies = async (req, res, next) => {
  }
  */
 const getMovieById = async (req, res, next) => {
+  const movieId = req.params.id;
+  logger.info('Incoming request: GET /movies/:id');
+  
   try {
-    const movie = await moviesService.getMovieById(req.params.id);
+    const movie = await moviesService.getMovieById(movieId);
+    logger.info('Movie retrieved successfully');
+    
     res.json({
       success: true,
       message: "Movie retrieved successfully",
@@ -83,6 +106,13 @@ const getMovieById = async (req, res, next) => {
     });
   } catch (error) {
     const statusCode = error.status || 500;
+    
+    if (statusCode === 404) {
+      logger.warn('Movie not found');
+    } else {
+      logger.error('Error retrieving movie');
+    }
+    
     res.status(statusCode).json({
       success: false,
       message: error.message || "Error retrieving movie",
@@ -127,9 +157,13 @@ const getMovieById = async (req, res, next) => {
  }
  */
 const createMovie = async (req, res, next) => {
+  logger.info('Incoming request: POST /movies');
+  
   try {
     // Validação: title e year são obrigatórios
     if (!req.body.title || !req.body.year) {
+      logger.warn('Validation error: Missing required fields');
+      
       return res.status(400).json({
         success: false,
         message: "Validation error",
@@ -138,12 +172,15 @@ const createMovie = async (req, res, next) => {
     }
 
     const createdMovie = await moviesService.createMovie(req.body);
+    logger.info('Movie created successfully');
+    
     res.status(201).json({
       success: true,
       message: "Movie created successfully",
       data: createdMovie
     });
   } catch (error) {
+    logger.error('Error creating movie');
     res.status(500).json({
       success: false,
       message: "Error creating movie",
@@ -200,8 +237,13 @@ const createMovie = async (req, res, next) => {
  }
  */
 const updateMovie = async (req, res, next) => {
+  const movieId = req.params.id;
+  logger.info('Incoming request: PUT /movies/:id');
+  
   try {
-    const updatedMovie = await moviesService.updateMovie(req.params.id, req.body);
+    const updatedMovie = await moviesService.updateMovie(movieId, req.body);
+    logger.info('Movie updated successfully');
+    
     res.json({
       success: true,
       message: "Movie updated successfully",
@@ -209,6 +251,13 @@ const updateMovie = async (req, res, next) => {
     });
   } catch (error) {
     const statusCode = error.status || 500;
+    
+    if (statusCode === 404) {
+      logger.warn('Movie not found for update');
+    } else {
+      logger.error('Error updating movie');
+    }
+    
     res.status(statusCode).json({
       success: false,
       message: error.message || "Error updating movie",
@@ -252,14 +301,26 @@ const updateMovie = async (req, res, next) => {
  }
  */
 const deleteMovie = async (req, res, next) => {
+  const movieId = req.params.id;
+  logger.info('Incoming request: DELETE /movies/:id');
+  
   try {
-    await moviesService.deleteMovie(req.params.id);
+    await moviesService.deleteMovie(movieId);
+    logger.info('Movie deleted successfully');
+    
     res.status(200).json({
       success: true,
       message: "Movie deleted successfully"
     });
   } catch (error) {
     const statusCode = error.status || 500;
+    
+    if (statusCode === 404) {
+      logger.warn('Movie not found for deletion');
+    } else {
+      logger.error('Error deleting movie');
+    }
+    
     res.status(statusCode).json({
       success: false,
       message: error.message || "Error deleting movie",
