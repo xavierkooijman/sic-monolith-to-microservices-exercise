@@ -18,7 +18,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/reviews", require("./routes/reviews.routes"));
+app.use("/reviews", require("../reviews-service/routes/reviews.routes"));
 app.use("/reviews/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // Error handling middleware
