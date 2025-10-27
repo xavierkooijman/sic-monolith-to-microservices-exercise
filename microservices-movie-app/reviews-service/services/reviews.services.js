@@ -20,8 +20,8 @@ const getReviewsByMovieId = async (movieId) => {
   return await reviewsModel.getReviewsByMovieId(movieId);
 };
 
-const createReview = async (reviewData) => {
-  return await reviewsModel.createReview(reviewData);
+const createReview = async (reviewData, userId) => {
+  return await reviewsModel.createReview(reviewData, userId);
 };
 
 const deleteReview = async (id) => {

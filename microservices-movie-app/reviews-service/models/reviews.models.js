@@ -16,11 +16,11 @@ const getReviewsByMovieId = async (movieId) => {
   return reviews.filter((r) => r.movieId === parseInt(movieId));
 };
 
-const createReview = async (reviewData) => {
+const createReview = async (reviewData, userId) => {
   const newReview = {
     id: reviews.length + 1,
     movieId: reviewData.movieId,
-    userId: reviewData.userId,
+    userId: userId,
     text: reviewData.text,
   };
   reviews.push(newReview);

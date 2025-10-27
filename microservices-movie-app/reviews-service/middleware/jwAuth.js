@@ -20,12 +20,11 @@ function checkAdminRole(req, res, next) {
 }
 
 function checkUserId(req, res, next) {
-    if(req.user.id !== req.params.id) {
+    if(req.user.id !== req.params.id && req.user.role !== "admin") {
         return res.status(403).json({ error: "Access denied. You can only access your own data." });
     }
     next();
 }
-
 
 
 module.exports = { authenticateToken, checkAdminRole, checkUserId };
