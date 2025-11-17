@@ -1,54 +1,65 @@
-const users = [
-  { id: 1, name: "Alice", email: "example@gmail.com", password: "password123", role: "admin" },
-  { id: 2, name: "Bob", email: "example2@gmail.com", password: "password456", role: "user" },
-];
+const mongoose = require("mongoose");
 
-function getAllUsers() {
-  return users;
+const userSchema = new mongoose.Schema({
+    id: { type: Number, unique: true },
+    name: String,
+    email: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+    role: String
+});
+
+const User = mongoose.model("User", userSchema);
+
+async function getAllUsers() {
+    return await User.find({}, '-password');
 }
 
-function getUserById(id) {
-  return users.find((u) => u.id === parseInt(id));
+async function getUserById(id) {
+    return await User.findOne({ id: parseInt(id) }, '-password');
 }
 
-function addUser(user) {
-  if (users.find((u) => u.email === user.email)) {
-    return null; // Email already exists
-  }
-  const newUser = {
-    id: users.length + 1,
-    name: user.name,
-    email: user.email,
-    password: user.password,
-    role: user.role,
-  };
-  users.push(newUser);
-  return newUser;
+async function addUser(user) {
+    const existingUser = await User.findOne({ email: user.email });
+    if (existingUser) {
+        return null; // Email already exists
+    }
+    const lastUser = await User.findOne().sort({ id: -1 });
+    const newUser = new User({
+        id: lastUser ? lastUser.id + 1 : 1,
+        name: user.name,
+        email: user.email,
+        password: user.password, // Password should be hashed in a real app
+        role: user.role || 'user',
+    });
+    await newUser.save();
+    const userObject = newUser.toObject();
+    delete userObject.password;
+    return userObject;
 }
 
-function updateUser(id, user) {
-  const index = users.findIndex((u) => u.id === parseInt(id));
-  if (index !== -1) {
-    users[index].name = user.name;
-    return users[index];
-  }
+async function updateUser(id, user) {
+    return await User.findOneAndUpdate({ id: parseInt(id) }, { name: user.name }, { new: true }).select('-password');
 }
 
-function deleteUser(id) {
-  const index = users.findIndex((u) => u.id === parseInt(id));
-  if (index !== -1) {
-    return index;
-  }
-  return null;
+async function deleteUser(id) {
+    const result = await User.deleteOne({ id: parseInt(id) });
+    return result.deletedCount > 0 ? true : null;
 }
 
-function loginUser(email) {
-  return users.find((u) => u.email === email);
+async function loginUser(email) {
+    return await User.findOne({ email: email });
 }
 
-function getUserByEmail(email) {
-  // Alias kept for compatibility with controller which calls getUserByEmail
-  return users.find((u) => u.email === email);
+async function getUserByEmail(email) {
+    return await User.findOne({ email: email }).select('-password');
 }
 
-module.exports = { getAllUsers, getUserById, addUser, updateUser, deleteUser, loginUser, getUserByEmail };
+module.exports = {
+    getAllUsers,
+    getUserById,
+    addUser,
+    updateUser,
+    deleteUser,
+    loginUser,
+    getUserByEmail,
+};

@@ -1,6 +1,8 @@
 const moviesModel = require("../models/movies.models");
 const axios = require("axios");
 
+const REVIEWS_SERVICE_HOST = process.env.REVIEWS_SERVICE_HOST || "localhost";
+
 const getMovies = async () => {
   return await moviesModel.getMovies();
 };
@@ -14,14 +16,22 @@ const getMovieById = async (id) => {
     throw error;
   }
 
-  // Fetch reviews from the reviews service
-  const movieReviews = await axios.get(
-    `http://localhost:5002/reviews?movieId=${id}`
-  );
-  console.log(movieReviews.data);
-  movie.reviews = movieReviews.data;
+  // Convert Mongoose document to plain object
+  const movieObj = movie.toObject ? movie.toObject() : movie;
 
-  return movie;
+  // Fetch reviews from the reviews service
+  try {
+    const movieReviews = await axios.get(
+      `http://${REVIEWS_SERVICE_HOST}:5002/reviews?movieId=${id}`
+    );
+    console.log(movieReviews.data);
+    movieObj.reviews = movieReviews.data;
+  } catch (error) {
+    console.log("Could not fetch reviews from reviews service:", error.message);
+    movieObj.reviews = [];
+  }
+
+  return movieObj;
 };
 
 const createMovie = async (movieData) => {

@@ -1,42 +1,35 @@
-let movies = [
-  { id: 1, title: "Treasure Planet", year: 2002 },
-  { id: 2, title: "The Matrix", year: 1999 },
-];
+const mongoose = require("mongoose");
+
+const Movie = mongoose.model("Movie", new mongoose.Schema({
+    id: Number,
+    title: String,
+    year: Number
+}));
 
 const getMovies = async () => {
-  return movies;
+    return await Movie.find();
 };
 
 const getMovieById = async (id) => {
-  return movies.find((m) => m.id === parseInt(id));
+    return await Movie.findOne({ id: parseInt(id) });
 };
 
 const createMovie = async (movieData) => {
-  const newMovie = {
-    id: movies.length + 1,
-    title: movieData.title,
-    year: movieData.year,
-  };
-  movies.push(newMovie);
-  return newMovie;
+    const lastMovie = await Movie.findOne().sort({ id: -1 });
+    const newMovie = new Movie({
+        id: lastMovie ? lastMovie.id + 1 : 1,
+        title: movieData.title,
+        year: movieData.year,
+    });
+    return await newMovie.save();
 };
 
 const updateMovie = async (id, movieData) => {
-  const index = movies.findIndex((m) => m.id === parseInt(id));
-  if (index !== -1) {
-    movies[index] = { ...movies[index], ...movieData };
-    return movies[index];
-  }
-  return null;
+    return await Movie.findOneAndUpdate({ id: parseInt(id) }, movieData, { new: true });
 };
 
 const deleteMovie = async (id) => {
-  const index = movies.findIndex((m) => m.id === parseInt(id));
-  if (index !== -1) {
-    movies.splice(index, 1);
-    return true;
-  }
-  return false;
+    return await Movie.deleteOne({ id: parseInt(id) });
 };
 
 module.exports = { getMovies, getMovieById, createMovie, updateMovie, deleteMovie };

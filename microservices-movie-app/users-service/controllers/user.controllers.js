@@ -2,24 +2,24 @@ const userModel = require("../models/user.models");
 const jwt = require("jsonwebtoken");
 
 // Controlador para obter todos os utilizadores
-function getUsers(req, res) {
+async function getUsers(req, res) {
   /*
  #swagger.tags = ['Users']
  #swagger.responses[200] = { description: 'Users fetched successfully', schema: {
 $ref: '#/definitions/GetUsers'} } */
-  const users = userModel.getAllUsers();
+  const users = await userModel.getAllUsers();
   res.status(200).json(users);
 }
 
 // Controlador para obter um utilizador por ID
-function getUser(req, res) {
+async function getUser(req, res) {
   /*
  #swagger.tags = ['Users']
  #swagger.responses[200] = { description: 'User fetched successfully', schema: {
 $ref: '#/definitions/GetUser'} }
  #swagger.responses[404] = { description: 'User not found' }
  */
-  const user = userModel.getUserById(req.params.id);
+  const user = await userModel.getUserById(req.params.id);
   if (user) {
     res.status(200).json(user);
   } else {
@@ -27,7 +27,7 @@ $ref: '#/definitions/GetUser'} }
   }
 }
 
-function createUser(req, res) {
+async function createUser(req, res) {
   /*
  #swagger.tags = ['Users']
  #swagger.parameters['body'] = {
@@ -40,14 +40,14 @@ function createUser(req, res) {
 $ref: '#/definitions/GetUser'} }
  #swagger.responses[409] = { description: 'Email already exists' }
  */
-  const newUser = userModel.addUser(req.body);
+  const newUser = await userModel.addUser(req.body);
   if (!newUser) {
     return res.status(409).json({ error: "Email already exists" });
   }
   res.status(201).json(newUser, "User created successfully");
 }
 
-function updateUser(req, res) {
+async function updateUser(req, res) {
   /*
  #swagger.tags = ['Users']
  #swagger.parameters['body'] = {
@@ -60,7 +60,7 @@ function updateUser(req, res) {
 $ref: '#/definitions/UpdateUser'} }
  #swagger.responses[404] = { description: 'User not found' }
  */
-  const updatedUser = userModel.updateUser(req.params.id, req.body);
+  const updatedUser = await userModel.updateUser(req.params.id, req.body);
   if (updatedUser) {
     res.status(200).json(updatedUser, "User updated successfully");
   } else {
@@ -68,7 +68,7 @@ $ref: '#/definitions/UpdateUser'} }
   }
 }
 
-function deleteUser(req, res) {
+async function deleteUser(req, res) {
   /*
  #swagger.tags = ['Users']
  #swagger.parameters['body'] = {
@@ -81,7 +81,7 @@ function deleteUser(req, res) {
 $ref: '#/definitions/DeleteUser'} }
  #swagger.responses[404] = { description: 'User not found' }
  */
-  const deletedUser = userModel.deleteUser(req.params.id);
+  const deletedUser = await userModel.deleteUser(req.params.id);
   if (deletedUser) {
     res.status(200).json("User deleted successfully");
   } else {
@@ -90,13 +90,13 @@ $ref: '#/definitions/DeleteUser'} }
 }
 
 
-function loginUser(req, res) {
+async function loginUser(req, res) {
     const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const user = userModel.getUserByEmail(email);
+    const user = await userModel.loginUser(email);
     if (!user || user.password !== password) {
         return res.status(401).json({ error: "Invalid email or password" });
     }
