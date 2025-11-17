@@ -1,53 +1,42 @@
-let reviews = [
-  { id: 1, movieId: 1, userId: 2, text: "Very underrated movie!" },
-  { id: 2, movieId: 1, userId: 1, text: "Best animated movie ever." },
-  { id: 3, movieId: 2, userId: 1, text: "Classic sci-fi." },
-];
+const mongoose = require("mongoose");
+
+const Review = mongoose.model("Review", new mongoose.Schema({
+    id: Number,
+    movieId: Number,
+    userId: Number,
+    text: String
+}));
 
 const getReviews = async () => {
-  return reviews;
+    return await Review.find();
 };
 
 const getReviewById = async (id) => {
-  return reviews.find((m) => m.id === parseInt(id));
+    return await Review.findOne({ id: parseInt(id) });
 };
 
 const getReviewsByMovieId = async (movieId) => {
-  return reviews.filter((r) => r.movieId === parseInt(movieId));
+    return await Review.find({ movieId: parseInt(movieId) });
 };
 
 const createReview = async (reviewData, userId) => {
-  const newReview = {
-    id: reviews.length + 1,
-    movieId: reviewData.movieId,
-    userId: userId,
-    text: reviewData.text,
-  };
-  reviews.push(newReview);
-  return newReview;
-};
-
-const deleteReview = async (id) => {
-  const index = reviews.findIndex((r) => r.id === parseInt(id));
-  if (index !== -1) {
-    reviews.splice(index, 1);
-    return true;
-  }
-  return false;
+    const lastReview = await Review.findOne().sort({ id: -1 });
+    const newReview = new Review({
+        id: lastReview ? lastReview.id + 1 : 1,
+        movieId: reviewData.movieId,
+        userId: userId,
+        text: reviewData.text,
+    });
+    return await newReview.save();
 };
 
 const updateReview = async (id, reviewData) => {
-  const index = reviews.findIndex((r) => r.id === parseInt(id));
-  if (index !== -1) {
-    reviews[index] = {
-      ...reviews[index],
-      movieId: reviewData.movieId ?? reviews[index].movieId,
-      userId: reviewData.userId ?? reviews[index].userId,
-      text: reviewData.text ?? reviews[index].text,
-    };
-    return reviews[index];
-  }
-  return null;
+    return await Review.findOneAndUpdate({ id: parseInt(id) }, reviewData, { new: true });
 };
 
-module.exports = { getReviews, getReviewById, getReviewsByMovieId, createReview, deleteReview, updateReview};
+const deleteReview = async (id) => {
+    const result = await Review.deleteOne({ id: parseInt(id) });
+    return result.deletedCount > 0;
+};
+
+module.exports = { getReviews, getReviewById, getReviewsByMovieId, createReview, updateReview, deleteReview };
