@@ -2,8 +2,7 @@ version: "3.8"
 
 services:
   mongodb:
-    image: mongo:8
-    container_name: mongodb
+    image: mongo:6
     ports:
       - "27017:27017"
     environment:
@@ -12,51 +11,58 @@ services:
     volumes:
       - mongodb-data:/data/db
     networks:
-      - app-network
+      - micro-net
+    deploy:
+      replicas: 1
 
   users-service:
     image: users-service:1.0
-    container_name: users-service
     ports:
       - "5000:5000"
     environment:
       - MONGO_HOST=mongodb
       - JWT_SECRET=secret
-    depends_on:
-      - mongodb
     networks:
-      - app-network
+      - micro-net
+    deploy:
+      replicas: 1
 
   movies-service:
     image: movies-service:1.0
-    container_name: movies-service
     ports:
       - "5001:5001"
     environment:
       - MONGO_HOST=mongodb
       - REVIEWS_SERVICE_HOST=reviews-service
-    depends_on:
-      - mongodb
-      - reviews-service
     networks:
-      - app-network
+      - micro-net
+    deploy:
+      replicas: 1
 
   reviews-service:
     image: reviews-service:1.0
-    container_name: reviews-service
     ports:
       - "5002:5002"
     environment:
       - MONGO_HOST=mongodb
-    depends_on:
-      - mongodb
     networks:
-      - app-network
+      - micro-net
+    deploy:
+      replicas: 1
+
+  api-gateway:
+    image: api-gateway:1.0
+    ports:
+      - "8080:80"
+    networks:
+      - micro-net
+    deploy:
+      replicas: 1
 
 volumes:
   mongodb-data:
 
 networks:
-  app-network:
-    driver: bridge
-
+  micro-net:
+    driver: overlay
+    attachable: true
